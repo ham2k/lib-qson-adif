@@ -1,0 +1,33 @@
+{
+  "root": "libs/qson/adif",
+  "sourceRoot": "libs/qson/adif/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/qson/adif",
+        "main": "libs/qson/adif/src/index.js",
+        "tsConfig": "libs/qson/adif/tsconfig.lib.json",
+        "assets": ["libs/qson/adif/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/qson/adif/**/*.js"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/qson/adif"],
+      "options": {
+        "jestConfig": "libs/qson/adif/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
