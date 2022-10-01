@@ -1,5 +1,4 @@
 const { AdifParser } = require("adif-parser-ts")
-const camelCase = require("camelcase")
 const { bandForFrequency } = require("@ham2k/data/operation")
 
 function adifToQSON(str) {
@@ -7,7 +6,6 @@ function adifToQSON(str) {
 }
 
 function parseADIF(str) {
-  const cache = {}
   let headers = {}
   const qsos = []
 
@@ -18,7 +16,7 @@ function parseADIF(str) {
   headers = adif.header
 
   adif.records.forEach((adifQSO, i) => {
-    const qso = parseAdifQSO(adifQSO, headers, cache)
+    const qso = parseAdifQSO(adifQSO)
     qsoCount++
     qso.number = qsoCount
     qso.line = i + 1
@@ -63,7 +61,7 @@ function cleanupCounty(country, county) {
   }
 }
 
-function parseAdifQSO(adifQSO, headers, cache) {
+function parseAdifQSO(adifQSO) {
   const qso = { our: {}, their: {} }
 
   condSet(adifQSO, qso.our, "station_callsign", "call")
@@ -241,7 +239,7 @@ function parseAdifQSO(adifQSO, headers, cache) {
   return qso
 }
 
-const REGEXP_FOR_NUMERIC_FREQUENCY = /^[\d\.]+$/
+const REGEXP_FOR_NUMERIC_FREQUENCY = /^[\d.]+$/
 
 function parseFrequency(freq) {
   if (freq.match(REGEXP_FOR_NUMERIC_FREQUENCY)) {
