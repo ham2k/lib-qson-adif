@@ -171,6 +171,27 @@ function parseAdifQSO(adifQSO) {
     qso.qsl.sources.push(data)
   }
 
+  if (adifQSO.qsl_rcvd === "Y") {
+    qso.qsl = qso.qsl || {}
+    qso.qsl.sources = qso.qsl.sources || []
+    const data = { via: "card" }
+    condSet(
+      adifQSO,
+      data,
+      "qslrdate",
+      "received",
+      (x) => [x.substr(0, 4), x.substr(4, 2), x.substr(6, 2)].join("-") + "T23:59:59Z"
+    )
+    condSet(
+      adifQSO,
+      data,
+      "qslsdate",
+      "sent",
+      (x) => [x.substr(0, 4), x.substr(4, 2), x.substr(6, 2)].join("-") + "T23:59:59Z"
+    )
+    qso.qsl.sources.push(data)
+  }
+
   if (qso.qsl && qso.qsl.sources) {
     qso.qsl.sources.forEach((s) => {
       if (s.received) {
