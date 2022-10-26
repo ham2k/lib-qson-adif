@@ -117,7 +117,7 @@ function parseAdifQSO(adifQSO) {
     qso.endMillis = Date.parse(qso.end).valueOf()
   } else if (adifQSO.time_off) {
     qso.end =
-      qso.start +
+      qso.start.substr(0, 10) +
       "T" +
       [
         adifQSO.time_off.substr(0, 2) || "00",
@@ -222,7 +222,7 @@ function parseAdifQSO(adifQSO) {
   condSet(adifQSO, qso.their, "gridsquare", "grid")
   condSet(adifQSO, qso.their, "lat", "lat")
   condSet(adifQSO, qso.their, "lon", "lon")
-  condSet(adifQSO, qso.their, "pfx", "entityPrefix")
+  condSet(adifQSO, qso.their, "ituPrefix", "entityPrefix")
 
   condSet(adifQSO, qso.our, "my_name", "name")
   condSet(adifQSO, qso.our, "my_cont", "continent")
