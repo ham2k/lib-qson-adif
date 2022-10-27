@@ -70,6 +70,8 @@ function parseAdifQSO(adifQSO) {
   qso.freq = parseFrequency(adifQSO.freq)
   qso.band = adifQSO.band.toLowerCase() || bandForFrequency(qso.freq)
 
+  console.log(qso)
+
   if (adifQSO.freq_rx) {
     qso.their.freq = parseFrequency(adifQSO.freq_rx)
     qso.their.band = adifQSO.band_rx || bandForFrequency(qso.their.freq)
@@ -126,6 +128,14 @@ function parseAdifQSO(adifQSO) {
       ].join(":") +
       "Z"
     qso.endMillis = Date.parse(qso.end).valueOf()
+  }
+  if (!qso.end && qso.start) {
+    qso.end = qso.start
+    qso.endMillis = qso.startMillis
+  }
+  if (!qso.start && qso.end) {
+    qso.start = qso.end
+    qso.startMillis = qso.endMillis
   }
 
   if (adifQSO.app_qrzlog_qsldate) {
@@ -263,7 +273,7 @@ function parseAdifQSO(adifQSO) {
 const REGEXP_FOR_NUMERIC_FREQUENCY = /^[\d.]+$/
 
 function parseFrequency(freq) {
-  if (freq.match(REGEXP_FOR_NUMERIC_FREQUENCY)) {
+  if (freq && freq.match(REGEXP_FOR_NUMERIC_FREQUENCY)) {
     const n = Number.parseFloat(freq) * 1000
     return Math.round((n + Number.EPSILON) * 100) / 100
   } else {
