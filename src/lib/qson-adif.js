@@ -70,8 +70,6 @@ function parseAdifQSO(adifQSO) {
   qso.freq = parseFrequency(adifQSO.freq)
   qso.band = adifQSO.band.toLowerCase() || bandForFrequency(qso.freq)
 
-  console.log(qso)
-
   if (adifQSO.freq_rx) {
     qso.their.freq = parseFrequency(adifQSO.freq_rx)
     qso.their.band = adifQSO.band_rx || bandForFrequency(qso.their.freq)
