@@ -1,5 +1,5 @@
 {
-  "root": "libs/qson/adif",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/qson/adif/src",
   "projectType": "library",
   "targets": {
@@ -22,9 +22,9 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/qson/adif"],
+      "outputs": ["{workspaceRoot}/coverage/libs/qson/adif"],
       "options": {
-        "jestConfig": "libs/qson/adif/jest.config.js",
+        "jestConfig": "libs/qson/adif/jest.config.ts",
         "passWithNoTests": true
       }
     }

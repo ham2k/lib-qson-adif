@@ -1,4 +1,5 @@
-module.exports = {
+/* eslint-disable */
+export default {
   displayName: "qson-adif",
   preset: "../../../jest.preset.js",
   globals: {
