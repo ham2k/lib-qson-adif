@@ -3,6 +3,6 @@
   "version": "0.0.1",
   "type": "commonjs",
   "dependencies": {
-    "adif-parser-ts": "^0.4.48"
+    "adif-parser-ts": "^0.4.55"
   }
 }
