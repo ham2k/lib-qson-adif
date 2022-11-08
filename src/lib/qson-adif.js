@@ -68,7 +68,7 @@ function parseAdifQSO(adifQSO) {
   condSet(adifQSO, qso.their, "call", "call")
 
   qso.freq = parseFrequency(adifQSO.freq)
-  qso.band = adifQSO.band.toLowerCase() || bandForFrequency(qso.freq)
+  qso.band = (adifQSO.band && adifQSO.band.toLowerCase()) || bandForFrequency(qso.freq)
 
   if (adifQSO.freq_rx) {
     qso.their.freq = parseFrequency(adifQSO.freq_rx)
