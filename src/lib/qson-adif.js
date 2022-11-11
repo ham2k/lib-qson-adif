@@ -159,7 +159,7 @@ function parseAdifQSO(adifQSO) {
       [adifQSO.lotw_qslrdate.substr(0, 4), adifQSO.lotw_qslrdate.substr(4, 2), adifQSO.lotw_qslrdate.substr(6, 2)].join(
         "-"
       ) + "T23:59:59Z"
-    if (adifQSO.lotw_qslrdate) {
+    if (adifQSO.lotw_qslsdate) {
       data.sent =
         [
           adifQSO.lotw_qslsdate.substr(0, 4),
