@@ -52,9 +52,9 @@ const REGEXP_FOR_US_COUNTRY = /(United States|Hawaii|Alaska)/i
 const REGEXP_FOR_OTHER_COUNTRIES_WITH_COUNTIES = /(Puerto Rico)/i
 
 function cleanupCounty(country, county) {
-  if (country.match(REGEXP_FOR_US_COUNTRY)) {
+  if (country?.match(REGEXP_FOR_US_COUNTRY)) {
     return `US/${county.replace(/,\s*/, "/")}`
-  } else if (country.match(REGEXP_FOR_OTHER_COUNTRIES_WITH_COUNTIES)) {
+  } else if (country?.match(REGEXP_FOR_OTHER_COUNTRIES_WITH_COUNTIES)) {
     return county.replace(/,\s*/, "/")
   } else {
     return `??/${county.replace(/,\s*/, "/")}`
