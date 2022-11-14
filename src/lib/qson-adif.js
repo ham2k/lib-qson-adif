@@ -290,6 +290,11 @@ function parseAdifQSO(adifQSO) {
       }
     }
 
+    if (adifQSO.iota) {
+      qso.refs = qso.refs || []
+      qso.refs.push({ type: "iota", ref: adifQSO.iota })
+    }
+
     return qso
   } catch (error) {
     console.error(
