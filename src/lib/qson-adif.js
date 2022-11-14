@@ -15,7 +15,7 @@ function parseADIF(str) {
 
   headers = adif.header
 
-  adif.records.forEach((adifQSO, i) => {
+  adif.records.forEach((adifQSO) => {
     const qso = parseAdifQSO(adifQSO)
     if (qso) {
       qsoCount++
