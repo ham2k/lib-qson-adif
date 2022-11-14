@@ -175,6 +175,18 @@ function parseAdifQSO(adifQSO) {
           ].join("-") + "T23:59:59Z"
       }
       qso.qsl.sources.push(data)
+    } else if (adifQSO.app_lotw_rxqsl) {
+      qso.qsl = qso.qsl || {}
+      qso.qsl.sources = qso.qsl.sources || []
+      const data = { via: "lotw" }
+      condSet(adifQSO, data, "app_lotw_rxqsl", "received", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
+      condSet(adifQSO, data, "app_lotw_rxqso", "sent", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
+      qso.qsl.sources.push(data)
+    } else if (adifQSO.lotw_qsl_rcvd) {
+      qso.qsl = qso.qsl || {}
+      qso.qsl.sources = qso.qsl.sources || []
+      const data = { via: "lotw" }
+      qso.qsl.sources.push(data)
     }
 
     if (adifQSO.eqsl_qsl_rcvd === "Y") {
@@ -189,15 +201,6 @@ function parseAdifQSO(adifQSO) {
             adifQSO.eqsl_qsl_rdate.substr(6, 2),
           ].join("-") + "T23:59:59Z"
       }
-      qso.qsl.sources.push(data)
-    }
-
-    if (adifQSO.app_lotw_rxqsl) {
-      qso.qsl = qso.qsl || {}
-      qso.qsl.sources = qso.qsl.sources || []
-      const data = { via: "lotw" }
-      condSet(adifQSO, data, "app_lotw_rxqsl", "received", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
-      condSet(adifQSO, data, "app_lotw_rxqso", "sent", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
       qso.qsl.sources.push(data)
     }
 
