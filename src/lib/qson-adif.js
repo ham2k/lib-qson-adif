@@ -5,7 +5,7 @@ function adifToQSON(str) {
   return parseADIF(str)
 }
 
-function parseADIF(str) {
+function parseADIF(str, options = {}) {
   let headers = {}
   const qsos = []
 
@@ -15,8 +15,16 @@ function parseADIF(str) {
 
   headers = adif.header
 
+  if (headers?.programid === "LoTW") {
+    options.genericQSL = false
+  } else if (headers?.programid === "Club Log") {
+    options.genericQSL = "qsl"
+  } else {
+    options.genericQSL = "card"
+  }
+
   adif.records.forEach((adifQSO) => {
-    const qso = parseAdifQSO(adifQSO)
+    const qso = parseAdifQSO(adifQSO, options)
     if (qso) {
       qsoCount++
       qso.number = qsoCount
@@ -62,7 +70,7 @@ function cleanupCounty(country, county) {
   }
 }
 
-function parseAdifQSO(adifQSO) {
+function parseAdifQSO(adifQSO, options) {
   try {
     const qso = { our: {}, their: {} }
 
@@ -74,64 +82,28 @@ function parseAdifQSO(adifQSO) {
     qso.band = (adifQSO.band && adifQSO.band.toLowerCase()) || bandForFrequency(qso.freq)
 
     if (adifQSO.freq_rx) {
-      qso.their.freq = parseFrequency(adifQSO.freq_rx)
-      qso.their.band = adifQSO.band_rx || bandForFrequency(qso.their.freq)
+      const rx = parseFrequency(adifQSO.freq_rx)
+      if (rx != qso.freq) {
+        qso.their.freq = parseFrequency(adifQSO.freq_rx)
+        qso.their.band = adifQSO.band_rx || bandForFrequency(qso.their.freq)
+      }
     }
 
     qso.mode = adifQSO.mode
 
     if (adifQSO.qso_date) {
-      qso.start = [adifQSO.qso_date.substr(0, 4), adifQSO.qso_date.substr(4, 2), adifQSO.qso_date.substr(6, 2)].join(
-        "-"
-      )
-      if (adifQSO.time_on) {
-        qso.start =
-          qso.start +
-          "T" +
-          [
-            adifQSO.time_on.substr(0, 2) || "00",
-            adifQSO.time_on.substr(2, 2) || "00",
-            adifQSO.time_on.substr(4, 2) || "00",
-          ].join(":") +
-          "Z"
-      } else {
-        qso.start = qso.start + "T00:00:00Z"
-      }
+      qso.start = adifDateToISO(adifQSO.qso_date, adifQSO.time_on || "00:00:00")
       qso.startMillis = Date.parse(qso.start).valueOf()
     }
 
     if (adifQSO.qso_date_off) {
-      qso.end = [
-        adifQSO.qso_date_off.substr(0, 4),
-        adifQSO.qso_date_off.substr(4, 2),
-        adifQSO.qso_date_off.substr(6, 2),
-      ].join("-")
-      if (adifQSO.time_off) {
-        qso.end =
-          qso.end +
-          "T" +
-          [
-            adifQSO.time_off.substr(0, 2) || "00",
-            adifQSO.time_off.substr(2, 2) || "00",
-            adifQSO.time_off.substr(4, 2) || "00",
-          ].join(":") +
-          "Z"
-      } else {
-        qso.end = qso.end + " 00:00:00Z"
-      }
+      qso.end = adifDateToISO(adifQSO.qso_date_off, adifQSO.time_off || "23:59:59")
       qso.endMillis = Date.parse(qso.end).valueOf()
     } else if (adifQSO.time_off) {
-      qso.end =
-        qso.start.substr(0, 10) +
-        "T" +
-        [
-          adifQSO.time_off.substr(0, 2) || "00",
-          adifQSO.time_off.substr(2, 2) || "00",
-          adifQSO.time_off.substr(4, 2) || "00",
-        ].join(":") +
-        "Z"
+      qso.end = adifDateToISO(adifQSO.qso_date, adifQSO.time_off || "23:59:59")
       qso.endMillis = Date.parse(qso.end).valueOf()
     }
+
     if (!qso.end && qso.start) {
       qso.end = qso.start
       qso.endMillis = qso.startMillis
@@ -146,12 +118,7 @@ function parseAdifQSO(adifQSO) {
       qso.qsl.sources = qso.qsl.sources || []
       const data = { via: "qrz" }
       condSet(adifQSO, data, "app_qrzlog_logid", "id")
-      data.received =
-        [
-          adifQSO.app_qrzlog_qsldate.substr(0, 4),
-          adifQSO.app_qrzlog_qsldate.substr(4, 2),
-          adifQSO.app_qrzlog_qsldate.substr(6, 2),
-        ].join("-") + "T23:59:59Z"
+      data.received = adifDateToISO(adifQSO.app_qrzlog_qsldate)
       qso.qsl.sources.push(data)
     }
 
@@ -160,20 +127,8 @@ function parseAdifQSO(adifQSO) {
       qso.qsl = qso.qsl || {}
       qso.qsl.sources = qso.qsl.sources || []
       const data = { via: "lotw" }
-      data.received =
-        [
-          adifQSO.lotw_qslrdate.substr(0, 4),
-          adifQSO.lotw_qslrdate.substr(4, 2),
-          adifQSO.lotw_qslrdate.substr(6, 2),
-        ].join("-") + "T23:59:59Z"
-      if (adifQSO.lotw_qslsdate) {
-        data.sent =
-          [
-            adifQSO.lotw_qslsdate.substr(0, 4),
-            adifQSO.lotw_qslsdate.substr(4, 2),
-            adifQSO.lotw_qslsdate.substr(6, 2),
-          ].join("-") + "T23:59:59Z"
-      }
+      condSet(adifQSO, data, "lotw_qslrdate", "received", adifDateToISO)
+      condSet(adifQSO, data, "lotw_qslsdate", "sent", adifDateToISO)
       qso.qsl.sources.push(data)
     } else if (adifQSO.app_lotw_rxqsl) {
       qso.qsl = qso.qsl || {}
@@ -193,35 +148,17 @@ function parseAdifQSO(adifQSO) {
       qso.qsl = qso.qsl || {}
       qso.qsl.sources = qso.qsl.sources || []
       const data = { via: "eqsl" }
-      if (adifQSO.eqsl_sql_rdate) {
-        data.received =
-          [
-            adifQSO.eqsl_qsl_rdate.substr(0, 4),
-            adifQSO.eqsl_qsl_rdate.substr(4, 2),
-            adifQSO.eqsl_qsl_rdate.substr(6, 2),
-          ].join("-") + "T23:59:59Z"
-      }
+      condSet(adifQSO, data, "eqsl_sql_rdate", "received", adifDateToISO)
       qso.qsl.sources.push(data)
     }
 
-    if (adifQSO.qsl_rcvd === "Y") {
+    if (adifQSO.qsl_rcvd === "Y" && options.genericQSL) {
       qso.qsl = qso.qsl || {}
       qso.qsl.sources = qso.qsl.sources || []
-      const data = { via: "card" }
-      condSet(
-        adifQSO,
-        data,
-        "qslrdate",
-        "received",
-        (x) => [x.substr(0, 4), x.substr(4, 2), x.substr(6, 2)].join("-") + "T23:59:59Z"
-      )
-      condSet(
-        adifQSO,
-        data,
-        "qslsdate",
-        "sent",
-        (x) => [x.substr(0, 4), x.substr(4, 2), x.substr(6, 2)].join("-") + "T23:59:59Z"
-      )
+      const data = { via: options.genericQSL }
+
+      condSet(adifQSO, data, "qslrdate", "received", adifDateToISO)
+      condSet(adifQSO, data, "qslsdate", "sent", adifDateToISO)
       qso.qsl.sources.push(data)
     }
 
@@ -317,6 +254,15 @@ function parseFrequency(freq) {
   } else {
     return freq
   }
+}
+
+function adifDateToISO(str, time) {
+  if (time && time.indexOf(":")) {
+    time = [time.substr(0, 2) || "00", time.substr(2, 2) || "00", time.substr(4, 2) || "00"].join(":")
+  } else {
+    time = "00:00:00"
+  }
+  return [str.substr(0, 4), str.substr(4, 2), str.substr(6, 2)].join("-") + `T${time}Z`
 }
 
 module.exports = {

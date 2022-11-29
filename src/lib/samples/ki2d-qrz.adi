@@ -257,7 +257,7 @@ QRZLogbook download for ki2d
 <eor>
 
 <app_qrzlog_logid:9>629033963
-<app_qrzlog_qsldate:8>20210510
+<app_qrzlog_qsldate:8>20210509
 <app_qrzlog_status:1>C
 <band:3>40m
 <band_rx:3>40m
@@ -292,8 +292,10 @@ QRZLogbook download for ki2d
 <name:13>Erwin Lemmers
 <qrzcom_qso_upload_date:8>20210504
 <qrzcom_qso_upload_status:1>Y
-<qsl_rcvd:1>N
-<qsl_sent:1>N
+<qsl_rcvd:1>Y
+<qsl_sent:1>Y
+<qslrdate:8>20210522
+<qslsdate:8>20210525
 <qsl_via:13>ALL VIA M0URX
 <qso_date:8>20210504
 <qso_date_off:8>20210504
