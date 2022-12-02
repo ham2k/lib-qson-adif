@@ -137,7 +137,7 @@ function parseAdifQSO(adifQSO, options) {
       condSet(adifQSO, data, "app_lotw_rxqsl", "received", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
       condSet(adifQSO, data, "app_lotw_rxqso", "sent", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
       qso.qsl.sources.push(data)
-    } else if (adifQSO.lotw_qsl_rcvd) {
+    } else if (adifQSO.lotw_qsl_rcvd === "Y") {
       qso.qsl = qso.qsl || {}
       qso.qsl.sources = qso.qsl.sources || []
       const data = { via: "lotw" }
