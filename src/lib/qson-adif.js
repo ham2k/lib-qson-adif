@@ -50,9 +50,9 @@ function parseADIF(str, options = {}) {
 function condSet(src, dest, field, destField, f) {
   if (src[field]) {
     if (f) {
-      dest[destField || field] = f(src[field])
+      dest[destField ?? field] = f(src[field])
     } else {
-      dest[destField || field] = src[field]
+      dest[destField ?? field] = src[field]
     }
   }
 }
@@ -114,8 +114,8 @@ function parseAdifQSO(adifQSO, options) {
     }
 
     if (adifQSO.app_qrzlog_qsldate) {
-      qso.qsl = qso.qsl || {}
-      qso.qsl.sources = qso.qsl.sources || []
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.sources = qso.qsl.sources ?? []
       const data = { via: "qrz" }
       condSet(adifQSO, data, "app_qrzlog_logid", "id")
       data.received = adifDateToISO(adifQSO.app_qrzlog_qsldate)
@@ -124,37 +124,37 @@ function parseAdifQSO(adifQSO, options) {
 
     if (adifQSO.lotw_qslrdate) {
       // QRZ ADIF includes LOTW dates
-      qso.qsl = qso.qsl || {}
-      qso.qsl.sources = qso.qsl.sources || []
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.sources = qso.qsl.sources ?? []
       const data = { via: "lotw" }
       condSet(adifQSO, data, "lotw_qslrdate", "received", adifDateToISO)
       condSet(adifQSO, data, "lotw_qslsdate", "sent", adifDateToISO)
       qso.qsl.sources.push(data)
     } else if (adifQSO.app_lotw_rxqsl) {
-      qso.qsl = qso.qsl || {}
-      qso.qsl.sources = qso.qsl.sources || []
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.sources = qso.qsl.sources ?? []
       const data = { via: "lotw" }
       condSet(adifQSO, data, "app_lotw_rxqsl", "received", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
       condSet(adifQSO, data, "app_lotw_rxqso", "sent", (x) => x.replace(/(\d+) (\d+):/, "$1T$2:") + "Z")
       qso.qsl.sources.push(data)
     } else if (adifQSO.lotw_qsl_rcvd === "Y") {
-      qso.qsl = qso.qsl || {}
-      qso.qsl.sources = qso.qsl.sources || []
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.sources = qso.qsl.sources ?? []
       const data = { via: "lotw" }
       qso.qsl.sources.push(data)
     }
 
     if (adifQSO.eqsl_qsl_rcvd === "Y") {
-      qso.qsl = qso.qsl || {}
-      qso.qsl.sources = qso.qsl.sources || []
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.sources = qso.qsl.sources ?? []
       const data = { via: "eqsl" }
       condSet(adifQSO, data, "eqsl_sql_rdate", "received", adifDateToISO)
       qso.qsl.sources.push(data)
     }
 
     if (adifQSO.qsl_rcvd === "Y" && options.genericQSL) {
-      qso.qsl = qso.qsl || {}
-      qso.qsl.sources = qso.qsl.sources || []
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.sources = qso.qsl.sources ?? []
       const data = { via: options.genericQSL }
 
       condSet(adifQSO, data, "qslrdate", "received", adifDateToISO)
@@ -217,7 +217,7 @@ function parseAdifQSO(adifQSO, options) {
     condSet(adifQSO, qso.our, "tx_pwr", "power")
 
     if (adifQSO.contest_id) {
-      qso.refs = qso.refs || []
+      qso.refs = qso.refs ?? []
       qso.refs.push({ type: "contest", ref: adifQSO.contest_id })
       if (adifQSO.srx) {
         qso.their.sent = qso.their.sent + " " + adifQSO.srx
@@ -228,7 +228,7 @@ function parseAdifQSO(adifQSO, options) {
     }
 
     if (adifQSO.iota) {
-      qso.refs = qso.refs || []
+      qso.refs = qso.refs ?? []
       qso.refs.push({ type: "iota", ref: adifQSO.iota })
     }
 
