@@ -74,9 +74,9 @@ function parseAdifQSO(adifQSO, options) {
   try {
     const qso = { our: {}, their: {} }
 
-    condSet(adifQSO, qso.our, "operator", "operator")
-    condSet(adifQSO, qso.our, "station_callsign", "call")
-    condSet(adifQSO, qso.their, "call", "call")
+    condSet(adifQSO, qso.our, "operator", "operator", (x) => x.replace("_", "/"))
+    condSet(adifQSO, qso.our, "station_callsign", "call", (x) => x.replace("_", "/"))
+    condSet(adifQSO, qso.their, "call", "call", (x) => x.replace("_", "/"))
 
     qso.freq = parseFrequency(adifQSO.freq)
     qso.band = (adifQSO.band && adifQSO.band.toLowerCase()) || bandForFrequency(qso.freq)
