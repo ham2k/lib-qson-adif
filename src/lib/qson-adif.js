@@ -1,5 +1,5 @@
 const { AdifParser } = require("adif-parser-ts")
-const { bandForFrequency } = require("@ham2k/data/operation")
+const { bandForFrequency } = require("@ham2k/data-operation")
 
 function adifToQSON(str) {
   return parseADIF(str)
