@@ -1,5 +1,5 @@
 {
-  "name": "@ham2k/qson-adif",
+  "name": "@ham2k/qson/adif",
   "version": "0.0.1",
   "type": "commonjs",
   "dependencies": {
