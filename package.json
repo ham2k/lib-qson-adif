@@ -1,8 +1,24 @@
 {
-  "name": "@ham2k/qson/adif",
+  "name": "@ham2k/lib-qson-adif",
   "version": "0.0.1",
   "type": "commonjs",
   "dependencies": {
-    "adif-parser-ts": "^0.4.55"
+    "adif-parser-ts": "^0.4.55",
+    "@ham2k/lib-operation-data": "~0.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "standard": "^17.0.0"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "standard": {
+    "env": [
+      "jest"
+    ]
   }
 }
