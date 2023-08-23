@@ -65,6 +65,10 @@ A few attributes, such as `grid` or `county`, have the potential of having multi
 
 How do we handle lists/groups of QSOs? Do we need to store common attributes (such as contest refs) for a list?
 
+# Data References
+
+[ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) Countries and their subdivisions (states, provinces, etc)
+
 # Example
 
 ```
