@@ -1,6 +1,6 @@
 {
   "name": "@ham2k/lib-qson-adif",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "commonjs",
   "dependencies": {
     "adif-parser-ts": "^0.4.55",

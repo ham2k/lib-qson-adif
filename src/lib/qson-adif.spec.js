@@ -5,7 +5,7 @@ const path = require('path')
 describe('adifToQSON', () => {
   it('should work with LoTW files', () => {
     /* eslint-disable n/handle-callback-err */
-    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-lotw.adi'), 'utf8', (err, data) => data)
+    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-lotw.adi'), 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
 
@@ -35,7 +35,7 @@ describe('adifToQSON', () => {
 
   it('should work with QRZ files', () => {
     /* eslint-disable n/handle-callback-err */
-    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-qrz.adi'), 'utf8', (err, data) => data)
+    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-qrz.adi'), 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
 
@@ -69,7 +69,7 @@ describe('adifToQSON', () => {
 
   it('should work with N1MM files', () => {
     /* eslint-disable n/handle-callback-err */
-    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-n1mm.adi'), 'utf8', (err, data) => data)
+    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-n1mm.adi'), 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
 
@@ -91,7 +91,7 @@ describe('adifToQSON', () => {
 
   it('should work with Club Log files', () => {
     /* eslint-disable n/handle-callback-err */
-    const clublog = fs.readFileSync(path.join(__dirname, './samples/ki2d-clublog.adi'), 'utf8', (err, data) => data)
+    const clublog = fs.readFileSync(path.join(__dirname, './samples/ki2d-clublog.adi'), 'ascii', (err, data) => data)
 
     const qson = adifToQSON(clublog)
 
@@ -110,3 +110,30 @@ describe('adifToQSON', () => {
     expect(qson.qsos[5].qsl.received).toEqual('2020-09-04T00:00:00Z')
   })
 })
+
+  it('should work with MixW files', () => {
+    /* eslint-disable n/handle-callback-err */
+    const lotw = fs.readFileSync(path.join(__dirname, './samples/wo7r-mixw2.adi'), 'ascii', (err, data) => data)
+
+    const qson = adifToQSON(lotw)
+
+    expect(qson.qsos.length).toEqual(15)
+    expect(qson.qsos[5].start).toEqual('2023-04-02T00:08:58Z')
+    expect(qson.qsos[5].startMillis).toEqual(Date.parse('2023-04-02T00:08:58Z'))
+    expect(qson.qsos[5].end).toEqual('2023-04-02T00:09:57Z')
+    expect(qson.qsos[5].endMillis).toEqual(Date.parse('2023-04-02T00:09:57Z'))
+    expect(qson.qsos[5].freq).toEqual(144116)
+    expect(qson.qsos[5].band).toEqual('2m')
+    expect(qson.qsos[5].mode).toEqual('JT65')
+    expect(qson.qsos[5].our.call).toEqual('WO7R')
+    expect(qson.qsos[5].their.call).toEqual('G8RWG')
+    expect(qson.qsos[5].their.cqZone).toEqual(14)
+    expect(qson.qsos[5].their.ituZone).toEqual(27)
+    expect(qson.qsos[5].their.sent).toEqual('599')
+    expect(qson.qsos[5].their.grid).toEqual('IO91')
+    expect(qson.qsos[5].their.entityName).toEqual('England')
+    expect(qson.qsos[5].their.dxccCode).toEqual(223)
+    expect(qson.qsos[5].their.continent).toEqual('EU')
+    expect(qson.qsos[5].qsl).toEqual(undefined)
+  })
+

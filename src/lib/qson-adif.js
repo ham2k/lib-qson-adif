@@ -11,7 +11,7 @@ function parseADIF (str, options = {}) {
 
   let qsoCount = 0
 
-  const adif = AdifParser.parseAdi(str)
+  const adif = AdifParser.parseAdi(cleanupBadADIF(str))
 
   headers = adif.header
 
@@ -55,6 +55,12 @@ function condSet (src, dest, field, destField, f) {
       dest[destField ?? field] = src[field]
     }
   }
+}
+
+const REGEXP_FOR_MIXW_BAD_ADIF = /<(PROGRAMID|PROGRAMVERSION)>(.+)([\n\r]+)/g
+function cleanupBadADIF(str) {
+  str = str.replace(REGEXP_FOR_MIXW_BAD_ADIF, (match, p1, p2, p3) => `<${p1}:${p2.length}>${p2}${p3}`)
+  return str
 }
 
 const REGEXP_FOR_US_COUNTRY = /(United States|Hawaii|Alaska)/i
