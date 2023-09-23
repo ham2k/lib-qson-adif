@@ -17,10 +17,8 @@ function parseADIF (str, options = {}) {
 
   if (headers?.programid === 'LoTW') {
     options.genericQSL = false
-  } else if (headers?.programid === 'Club Log') {
-    options.genericQSL = 'qsl'
   } else {
-    options.genericQSL = 'card'
+    options.genericQSL = 'qsl'
   }
 
   adif.records.forEach((adifQSO) => {
