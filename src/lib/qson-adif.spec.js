@@ -62,7 +62,7 @@ describe('adifToQSON', () => {
     expect(qson.qsos[5].qsl.sources).toEqual([
       { via: 'qrz', received: '2021-05-09T00:00:00Z', id: '629033963' },
       { via: 'lotw', received: '2021-05-10T00:00:00Z', sent: '2021-05-10T00:00:00Z' },
-      { via: 'card', received: '2021-05-22T00:00:00Z', sent: '2021-05-25T00:00:00Z' }
+      { via: 'qsl', received: '2021-05-22T00:00:00Z', sent: '2021-05-25T00:00:00Z' }
     ])
     expect(qson.qsos[5].qsl.received).toEqual('2021-05-09T00:00:00Z')
   })
@@ -109,13 +109,12 @@ describe('adifToQSON', () => {
     expect(qson.qsos[5].qsl.sources).toEqual([{ via: 'qsl', received: '2020-09-04T00:00:00Z' }])
     expect(qson.qsos[5].qsl.received).toEqual('2020-09-04T00:00:00Z')
   })
-})
 
   it('should work with MixW files', () => {
     /* eslint-disable n/handle-callback-err */
-    const lotw = fs.readFileSync(path.join(__dirname, './samples/wo7r-mixw2.adi'), 'ascii', (err, data) => data)
+    const mixw = fs.readFileSync(path.join(__dirname, './samples/wo7r-mixw2.adi'), 'ascii', (err, data) => data)
 
-    const qson = adifToQSON(lotw)
+    const qson = adifToQSON(mixw)
 
     expect(qson.qsos.length).toEqual(15)
     expect(qson.qsos[5].start).toEqual('2023-04-02T00:08:58Z')
@@ -136,4 +135,30 @@ describe('adifToQSON', () => {
     expect(qson.qsos[5].their.continent).toEqual('EU')
     expect(qson.qsos[5].qsl).toEqual(undefined)
   })
+
+    it('should work with HamRS POTA files', () => {
+    /* eslint-disable n/handle-callback-err */
+    const pota = fs.readFileSync(path.join(__dirname, './samples/ki2d-pota.adi'), 'ascii', (err, data) => data)
+
+    const qson = adifToQSON(pota)
+
+    expect(qson.qsos.length).toEqual(72)
+
+    expect(qson.qsos[0].start).toEqual('2023-09-07T23:27:27Z')
+    expect(qson.qsos[0].freq).toEqual(14290)
+    expect(qson.qsos[0].band).toEqual('20m')
+    expect(qson.qsos[0].mode).toEqual('SSB')
+    expect(qson.qsos[0].our.call).toEqual('KI2D')
+    expect(qson.qsos[0].their.call).toEqual('AC9OT')
+    expect(qson.qsos[0].their.grid).toEqual('EN52es')
+    expect(qson.qsos[0].our.grid).toEqual('FN54ui')
+    expect(qson.qsos[0].refs[0].type).toEqual("pota")
+    expect(qson.qsos[0].refs[0].name).toEqual("POTA")
+    expect(qson.qsos[0].refs[0].ref).toEqual("K-1467")
+    expect(qson.qsos[0].refs[0].our.ref).toEqual("K-0001")
+    expect(qson.qsos[0].refs[0].their.ref).toEqual("K-1467")
+  })
+
+
+})
 

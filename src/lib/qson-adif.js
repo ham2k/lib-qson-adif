@@ -46,13 +46,14 @@ function parseADIF (str, options = {}) {
 }
 
 function condSet (src, dest, field, destField, f) {
-  if (src[field]) {
-    if (f) {
-      dest[destField ?? field] = f(src[field])
-    } else {
-      dest[destField ?? field] = src[field]
-    }
+  let val = src[field] ?? src[field + '_intl']
+
+  if (val !== undefined) {
+    val = f ? f(val) : val
+    dest[destField ?? field] = val
   }
+
+  return val
 }
 
 const REGEXP_FOR_MIXW_BAD_ADIF = /<(PROGRAMID|PROGRAMVERSION)>(.+)([\n\r]+)/g
@@ -78,9 +79,14 @@ function parseAdifQSO (adifQSO, options) {
   try {
     const qso = { our: {}, their: {} }
 
-    condSet(adifQSO, qso.our, 'operator', 'operator', (x) => x.replace('_', '/'))
-    condSet(adifQSO, qso.our, 'station_callsign', 'call', (x) => x.replace('_', '/'))
     condSet(adifQSO, qso.their, 'call', 'call', (x) => x.replace('_', '/'))
+    condSet(adifQSO, qso.their, 'contacted_op', 'operator', (x) => x.replace('_', '/'))
+    condSet(adifQSO, qso.their, 'eq_call', 'owner', (x) => x.replace('_', '/'))
+
+    condSet(adifQSO, qso.our, 'operator', 'operator', (x) => x.replace('_', '/'))
+    condSet(adifQSO, qso.our, 'owner_callsign', 'owner', (x) => x.replace('_', '/'))
+    condSet(adifQSO, qso.our, 'operator', 'call', (x) => x.replace('_', '/'))
+    condSet(adifQSO, qso.our, 'station_callsign', 'call', (x) => x.replace('_', '/'))
 
     qso.freq = parseFrequency(adifQSO.freq)
     qso.band = (adifQSO.band && adifQSO.band.toLowerCase()) || bandForFrequency(qso.freq)
@@ -224,18 +230,73 @@ function parseAdifQSO (adifQSO, options) {
 
     if (adifQSO.contest_id) {
       qso.refs = qso.refs ?? []
-      qso.refs.push({ type: 'contest', ref: adifQSO.contest_id })
+      const contestRef = { type: 'contest', ref: adifQSO.contest_id }
       if (adifQSO.srx) {
+        contestRef.their = { exchange: adifQSO.srx }
         qso.their.sent = qso.their.sent + ' ' + adifQSO.srx
       }
       if (adifQSO.stx) {
+        contestRef.our = { exchange: adifQSO.stx }
         qso.our.sent = qso.our.sent + ' ' + adifQSO.stx
       }
+      qso.refs.push(contestRef)
     }
 
-    if (adifQSO.iota) {
+    if (adifQSO.iota || adifQSO.my_iota) {
       qso.refs = qso.refs ?? []
-      qso.refs.push({ type: 'iota', ref: adifQSO.iota })
+      const iotaRef = { type: 'iota' }
+      condSet(adifQSO, iotaRef, 'iota', 'ref')
+
+      if (adifQSO.iota || adifQSO.iota_island_id) {
+        iotaRef.their = {}
+        condSet(adifQSO, iotaRef.their, 'iota', 'ref')
+        condSet(adifQSO, iotaRef.their, 'iota_island_id', 'island')
+      }
+      if (adifQSO.my_iota || adifQSO.my_iota_island_id) {
+        iotaRef.our = {}
+        condSet(adifQSO, iotaRef.our, 'my_iota', 'ref')
+        condSet(adifQSO, iotaRef.our, 'my_iota_island_id', 'island')
+      }
+
+      qso.refs.push(iotaRef)
+    }
+
+    if (adifQSO.sota || adifQSO.my_sota) {
+      qso.refs = qso.refs ?? []
+      const sotaRef = { type: 'sota' }
+      condSet(adifQSO, sotaRef, 'sota_ref', 'ref')
+
+      if (adifQSO.sota_ref) {
+        sotaRef.their = {}
+        condSet(adifQSO, sotaRef.their, 'sota_ref', 'ref')
+      }
+      if (adifQSO.my_sota_ref) {
+        sotaRef.our = {}
+        condSet(adifQSO, sotaRef.our, 'my_sota_ref', 'ref')
+      }
+
+      qso.refs.push(sotaRef)
+    }
+
+    if (adifQSO.sig || adifQSO.my_sig) {
+      qso.refs = qso.refs ?? []
+      const sigRef = {}
+
+      condSet(adifQSO, sigRef, 'my_sig', 'name')
+      condSet(adifQSO, sigRef, 'sig', 'name')
+      sigRef.type = sigRef.name.toLowerCase()
+
+      condSet(adifQSO, sigRef, 'sig_info', 'ref')
+
+      if (adifQSO.sig_info || adifQSO.sig_info_intl) {
+        sigRef.their = {}
+        condSet(adifQSO, sigRef.their, 'sig_info', 'ref')
+      }
+      if (adifQSO.my_sig_info || adifQSO.my_sig_info_intl) {
+        sigRef.our = {}
+        condSet(adifQSO, sigRef.our, 'my_sig_info', 'ref')
+      }
+      qso.refs.push(sigRef)
     }
 
     return qso
