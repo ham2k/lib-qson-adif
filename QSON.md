@@ -1,5 +1,7 @@
 # QSO Object Notation
 
+VERSION 0.2
+
 A JSON-like object notation for representation of Amateur Radio log data, with an emphasis on legibility and clarity over storage efficiency.
 
 It is inspired by other Amateur Radio formats such as [ADIF](https://www.adif.org/) and [Cabrillo](https://wwrof.org/cabrillo/).
@@ -24,15 +26,13 @@ As large as one's logbook might seem, it will always be tiny by modern computing
 
 Make the format easily extensible. Allow for unexpected keys or values. Make it easy to write programs that use the data they know about, and ignore anything else.
 
-This also means trying to use predictable key names, and human readable values even if an app does not know what they mean. For example, don't use `{ contest: "CQWPX" }`, but rather `{ type: "contest", id: "CQWPX" }`
-
 # Structure
 
 Main components:
 
 - `.` : (the root level of the object) attributes common to both parties in the contact (even if they have been recorded from the point of view of the operator doing the logging).
 
-Examples: `start`, `end`, `band`, `mode`, `freq`.
+Examples: `startOn`, `endOn`, `band`, `mode`, `freq`.
 
 - Two sets of "operator" attributes: `ours` and `theirs`.
 
@@ -40,30 +40,32 @@ Both sets have the same kind of fields, including `call`, `name`, `exchange` (se
 
 - `qsl` : attributes pertaining to the confirmation of the contact.
 
-Examples: TKTKTK
+A hash of sources, each with a hash of attributes. Each source can have a `received` key with a boolean value, indicating whether the contact has been confirmed via that source. It can also have `receivedOn` and `sentOn` keys with a date values, along with other source-specific information.
+
+There is also a top-level `qsl.received` key with a boolean value, indicating whether the contact has been confirmed by any source.
 
 - `refs` : References to specific operations, activities or awards.
 
-A list of objects with at least `type` ("contest", "award", "net", etc) and `id` ("IOTA", "NATA", "DXCC") attributes.
+A hash of reference types such as "pota", "contest", etc. Each reference should have one or more text keys (such as "K-1234" for a POTA activation) that in turn contain either a boolean, a string label, or a hash with more information. Any value, even an empty hash, is considered equivalent to "true".
 
-- `sources` : A list of objects, each with a `source` attribute and different fragments of information following the QSON notation (yes, recursion!) obtained from each different source.
+For "asymetrical" activities like POTA, SOTA, etc, the default reference is for hunting, and a separate reference for activating is provided under `refs.potaActivation`.
 
-The most common `source` would be "log", representing the bits of information logged by the user, along, for example, data retrieved from "qrz.com" such as name and location of the other operator, under `their`, and perhaps information coming from "pota.app" with details of a POTA activation.
+# Special Cases
 
-All these "sources" are merged together to provide the main, summarized information in the root object `qso`, `ours`, `theirs`, `qsl` and `refs` keys.
+### Multiple Values
+
+A few keys have the potential of having multiple values for a single QSO, but 99% of the time they are just single values.
+For example, `grid`, or `county`. Or a single QSO that references to two contests or two POTA parks.
+
+In these cases, we append numbers to the attribute name, starting with "2". So for example, a QSO with 3 grids would have `grid`, `grid2` and `grid3`. A QSO with 2 contests would have `refs.contest` and `refs.contest2`.
+
+### Discardable values
+
+Some applications might include keys and values that are not relevant to the QSO itself, but to the application, and do not need to be preserved by other applications. These keys should start with an underscode `_`. For example, a log-parsing library might include `_number` and `_line` keys to indicate the position of a QSO in the log file.
 
 # Open Questions
 
-Is "activity" a good name for the different "things" (contests, awards, nets, operations, programmes) a QSO might be part of?
-Or perhaps "reference"? As in "in reference to ..."? Or "related", shortened to "rel" or "rels"? What about "ops"?
-
-Should we identify activities hierarchically? Like "Contest/CQWPX" and "Net/NATA" and "Award/DXCC" ? or using two fields like `type` and `id`?
-
 Do we need to worry about mix-mode QSOs?
-
-A few attributes, such as `grid` or `county`, have the potential of having multiple values for a single QSO, but 99% of the time they are just single values. Perhaps we can manage this by using `moreGrids` and `moreCounties` in those special cases? Or just have `grids` and `counties` always as arrays?
-
-How do we handle lists/groups of QSOs? Do we need to store common attributes (such as contest refs) for a list?
 
 # Data References
 
@@ -73,7 +75,7 @@ How do we handle lists/groups of QSOs? Do we need to store common attributes (su
 
 ```
 {
-  freq: "14.176",
+  freq: 14176,
   band: "20m",
   mode: "USB",
   modegroup: "PHONE",
@@ -93,48 +95,32 @@ How do we handle lists/groups of QSOs? Do we need to store common attributes (su
     report: "55",
     name: "JOHN",
     state: "NY"
-    freq: "14.1765",
+    freq: 141765,
   },
   qsl: {
-    sources: [
-      { source: "lotw", recordId: 1572527764 },
-      { source: "card" },
-      { source: "qrz" },
-      { source: "clublog" }
-    ]
+    lotw: { recordId: 1572527764, received: "2023-01-15"  },
+    qsl: { qsl: true },
+    qrz: { qsl: true },
+    clublog: { qsl: true },
   },
-  refs: [
-    {
-      type: "iota",
-      ref: "NA-1234",
-      role: "hunter"
+  refs: {
+    iota: { "NA-1234": true },
+    potaActivation: { "K-0123": true },
+    contest: {
+      NAQPSSB: {
+        transmitter: 0,
+        mults: ["K2"]
+      }
     },
-    {
-      type: "pota",
-      ref: "K-0123"
-      role: "activator"
-    },
-    {
-      type: "bota",
-      ref: "K-0123"
-      role: "activator"
-    },
-    {
-      type: "contest"
-      ref: "NAQPSSB"
-      transmitter: 0,
-      mults: ["K2"]
-    },
-    {
-      type: "net",
-      ref: "NATA"
-    },
-    {
-      type: "award",
-      ref: "USACA",
-      county: "USA/NY/Sullivan"
+    net: {
+      "NATA": true
     }
-  ],
+    award: {
+      "USACA": {
+        county: "USA/NY/Sullivan"
+      }
+    }
+  },
   sources: [
     {
       freq: "14.176",

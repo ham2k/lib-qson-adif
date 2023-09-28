@@ -7,7 +7,7 @@ function adifToQSON (str) {
 
 function parseADIF (str, options = {}) {
   let headers = {}
-  const qsos = []
+  const qsos = [], errors = []
 
   let qsoCount = 0
 
@@ -25,8 +25,13 @@ function parseADIF (str, options = {}) {
     const qso = parseAdifQSO(adifQSO, options)
     if (qso) {
       qsoCount++
-      qso.number = qsoCount
-      qsos.push(qso)
+      qso._number = qsoCount
+
+      if (qso._error) {
+        errors.push(qso)
+      } else {
+        qsos.push(qso)
+      }
     }
   })
 
@@ -34,14 +39,15 @@ function parseADIF (str, options = {}) {
     if (a.startMillis !== b.startMillis) {
       return a.startMillis - b.startMillis
     } else {
-      return a.number - b.number
+      return a._number - b._number
     }
   })
 
   return {
     source: 'adif',
     rawHeaders: headers,
-    qsos
+    qsos,
+    errors
   }
 }
 
@@ -102,87 +108,27 @@ function parseAdifQSO (adifQSO, options) {
     qso.mode = adifQSO.mode
 
     if (adifQSO.qso_date) {
-      qso.start = adifDateToISO(adifQSO.qso_date, adifQSO.time_on || '00:00:00')
-      qso.startMillis = Date.parse(qso.start).valueOf()
+      qso.startOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_on || '00:00:00')
+      qso.startOnMillis = Date.parse(qso.startOn).valueOf()
     }
 
     if (adifQSO.qso_date_off) {
-      qso.end = adifDateToISO(adifQSO.qso_date_off, adifQSO.time_off || '23:59:59')
-      qso.endMillis = Date.parse(qso.end).valueOf()
+      qso.endOn = adifDateToISO(adifQSO.qso_date_off, adifQSO.time_off || '23:59:59')
+      qso.endOnMillis = Date.parse(qso.endOn).valueOf()
     } else if (adifQSO.time_off) {
-      qso.end = adifDateToISO(adifQSO.qso_date, adifQSO.time_off || '23:59:59')
-      qso.endMillis = Date.parse(qso.end).valueOf()
+      qso.endOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_off || '23:59:59')
+      qso.endOnMillis = Date.parse(qso.endOn).valueOf()
     }
 
-    if (!qso.end && qso.start) {
-      qso.end = qso.start
-      qso.endMillis = qso.startMillis
+    if (!qso.endOn && qso.startOn) {
+      qso.endOn = qso.startOn
+      qso.endOnMillis = qso.startOnMillis
     }
-    if (!qso.start && qso.end) {
-      qso.start = qso.end
-      qso.startMillis = qso.endMillis
-    }
-
-    if (adifQSO.app_qrzlog_qsldate) {
-      qso.qsl = qso.qsl ?? {}
-      qso.qsl.sources = qso.qsl.sources ?? []
-      const data = { via: 'qrz' }
-      condSet(adifQSO, data, 'app_qrzlog_logid', 'id')
-      data.received = adifDateToISO(adifQSO.app_qrzlog_qsldate)
-      qso.qsl.sources.push(data)
+    if (!qso.startOn && qso.endOn) {
+      qso.startOn = qso.endOn
+      qso.startOnMillis = qso.endOnMillis
     }
 
-    if (adifQSO.lotw_qslrdate) {
-      // QRZ ADIF includes LOTW dates
-      qso.qsl = qso.qsl ?? {}
-      qso.qsl.sources = qso.qsl.sources ?? []
-      const data = { via: 'lotw' }
-      condSet(adifQSO, data, 'lotw_qslrdate', 'received', adifDateToISO)
-      condSet(adifQSO, data, 'lotw_qslsdate', 'sent', adifDateToISO)
-      qso.qsl.sources.push(data)
-    } else if (adifQSO.app_lotw_rxqsl) {
-      qso.qsl = qso.qsl ?? {}
-      qso.qsl.sources = qso.qsl.sources ?? []
-      const data = { via: 'lotw' }
-      condSet(adifQSO, data, 'app_lotw_rxqsl', 'received', (x) => x.replace(/(\d+) (\d+):/, '$1T$2:') + 'Z')
-      condSet(adifQSO, data, 'app_lotw_rxqso', 'sent', (x) => x.replace(/(\d+) (\d+):/, '$1T$2:') + 'Z')
-      qso.qsl.sources.push(data)
-    } else if (adifQSO.lotw_qsl_rcvd === 'Y') {
-      qso.qsl = qso.qsl ?? {}
-      qso.qsl.sources = qso.qsl.sources ?? []
-      const data = { via: 'lotw' }
-      qso.qsl.sources.push(data)
-    }
-
-    if (adifQSO.eqsl_qsl_rcvd === 'Y') {
-      qso.qsl = qso.qsl ?? {}
-      qso.qsl.sources = qso.qsl.sources ?? []
-      const data = { via: 'eqsl' }
-      condSet(adifQSO, data, 'eqsl_sql_rdate', 'received', adifDateToISO)
-      qso.qsl.sources.push(data)
-    }
-
-    if (adifQSO.qsl_rcvd === 'Y' && options.genericQSL) {
-      qso.qsl = qso.qsl ?? {}
-      qso.qsl.sources = qso.qsl.sources ?? []
-      const data = { via: options.genericQSL }
-
-      condSet(adifQSO, data, 'qslrdate', 'received', adifDateToISO)
-      condSet(adifQSO, data, 'qslsdate', 'sent', adifDateToISO)
-      qso.qsl.sources.push(data)
-    }
-
-    if (qso.qsl && qso.qsl.sources) {
-      qso.qsl.sources.forEach((s) => {
-        if (s.received) {
-          const millis = Date.parse(s.received).valueOf()
-          if (!qso.qsl.receivedMillis || millis < qso.qsl.receivedMillis) {
-            qso.qsl.received = s.received
-            qso.qsl.receivedMillis = millis
-          }
-        }
-      })
-    }
 
     condSet(adifQSO, qso.their, 'name', 'name')
     condSet(adifQSO, qso.their, 'cont', 'continent')
@@ -228,79 +174,100 @@ function parseAdifQSO (adifQSO, options) {
 
     condSet(adifQSO, qso.our, 'tx_pwr', 'power')
 
+    // QSL Information
+    if (adifQSO.app_qrzlog_qsldate) {
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.qrz = { received: true }
+      condSet(adifQSO, qso.qsl.qrz, 'app_qrzlog_logid', 'id')
+      condSet(adifQSO, qso.qsl.qrz, 'app_qrzlog_qsldate', 'receivedOn', adifDateToISO)
+    }
+
+    if (adifQSO.lotw_qslrdate) {
+      // QRZ ADIF includes LOTW dates
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.lotw = { received: true }
+      condSet(adifQSO, qso.qsl.lotw, 'lotw_qslrdate', 'receivedOn', adifDateToISO)
+      condSet(adifQSO, qso.qsl.lotw, 'lotw_qslsdate', 'sentOn', adifDateToISO)
+    } else if (adifQSO.app_lotw_rxqsl) {
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.lotw = { received: true }
+      condSet(adifQSO, qso.qsl.lotw, 'app_qrzlog_logid', 'id')
+      condSet(adifQSO, qso.qsl.lotw, 'app_lotw_rxqsl', 'receivedOn', (x) => x.replace(/(\d+) (\d+):/, '$1T$2:') + 'Z')
+      condSet(adifQSO, qso.qsl.lotw, 'app_lotw_rxqso', 'sentOn', (x) => x.replace(/(\d+) (\d+):/, '$1T$2:') + 'Z')
+    } else if (adifQSO.lotw_qsl_rcvd === 'Y') {
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.lotw = { received: true }
+    }
+
+    if (adifQSO.eqsl_qsl_rcvd === 'Y') {
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.eqsl = { received: true }
+      condSet(adifQSO, qso.qsl.eqsl, 'eqsl_sql_rdate', 'receivedOn', adifDateToISO)
+    }
+
+    if (adifQSO.qsl_rcvd === 'Y' && options.genericQSL) {
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.qsl = { received: true }
+      condSet(adifQSO, qso.qsl.qsl, 'qslrdate', 'receivedOn', adifDateToISO)
+      condSet(adifQSO, qso.qsl.qsl, 'qslsdate', 'sentOn', adifDateToISO)
+    }
+
+    Object.keys(qso.qsl || {}).forEach((s) => {
+      qso.qsl.received = qso.qsl.received || qso.qsl[s].received
+
+      if (qso.qsl[s].receivedOn) {
+        qso.qsl[s].receivedOnMillis = Date.parse(qso.qsl[s].receivedOn).valueOf()
+      }
+
+      if (qso.qsl[s].sentOn) {
+        qso.qsl[s].sentOnMillis = Date.parse(qso.qsl[s].sentOn).valueOf()
+      }
+    })
+
+    // References
     if (adifQSO.contest_id) {
-      qso.refs = qso.refs ?? []
-      const contestRef = { type: 'contest', ref: adifQSO.contest_id }
-      if (adifQSO.srx) {
-        contestRef.their = { exchange: adifQSO.srx }
-        qso.their.sent = qso.their.sent + ' ' + adifQSO.srx
-      }
-      if (adifQSO.stx) {
-        contestRef.our = { exchange: adifQSO.stx }
-        qso.our.sent = qso.our.sent + ' ' + adifQSO.stx
-      }
-      qso.refs.push(contestRef)
+      qso.refs = qso.refs ?? {}
+      const ref = {}
+      qso.refs.contest = { ref: adifQSO.contest_id }
     }
 
-    if (adifQSO.iota || adifQSO.my_iota) {
-      qso.refs = qso.refs ?? []
-      const iotaRef = { type: 'iota' }
-      condSet(adifQSO, iotaRef, 'iota', 'ref')
-
-      if (adifQSO.iota || adifQSO.iota_island_id) {
-        iotaRef.their = {}
-        condSet(adifQSO, iotaRef.their, 'iota', 'ref')
-        condSet(adifQSO, iotaRef.their, 'iota_island_id', 'island')
-      }
-      if (adifQSO.my_iota || adifQSO.my_iota_island_id) {
-        iotaRef.our = {}
-        condSet(adifQSO, iotaRef.our, 'my_iota', 'ref')
-        condSet(adifQSO, iotaRef.our, 'my_iota_island_id', 'island')
-      }
-
-      qso.refs.push(iotaRef)
+    if (adifQSO.iota) {
+      qso.refs = qso.refs ?? {}
+      const ref = { [adifQSO.iota]: {} }
+      condSet(adifQSO, ref, 'iota_island_id', 'island')
+      qso.refs.iota = ref
+    }
+    if (adifQSO.my_iota) {
+      qso.refs = qso.refs ?? {}
+      const ref = { [adifQSO.my_iota]: {} }
+      condSet(adifQSO, ref, 'my_iota_island_id', 'island')
+      qso.refs.iotaActivation = ref
     }
 
-    if (adifQSO.sota || adifQSO.my_sota) {
-      qso.refs = qso.refs ?? []
-      const sotaRef = { type: 'sota' }
-      condSet(adifQSO, sotaRef, 'sota_ref', 'ref')
-
-      if (adifQSO.sota_ref) {
-        sotaRef.their = {}
-        condSet(adifQSO, sotaRef.their, 'sota_ref', 'ref')
-      }
-      if (adifQSO.my_sota_ref) {
-        sotaRef.our = {}
-        condSet(adifQSO, sotaRef.our, 'my_sota_ref', 'ref')
-      }
-
-      qso.refs.push(sotaRef)
+    if (adifQSO.sota) {
+      qso.refs = qso.refs ?? {}
+      qso.refs.sota = { [adifQSO.sota]: true }
+    }
+    if (adifQSO.my_sota) {
+      qso.refs = qso.refs ?? {}
+      qso.refs.sotaActivation = { [adifQSO.my_sota]: true }
     }
 
-    if (adifQSO.sig || adifQSO.my_sig) {
-      qso.refs = qso.refs ?? []
-      const sigRef = {}
+    if (adifQSO.sig || adifQSO.sig_intl || adifQSO.my_sig || adifQSO.my_sig_intl ) {
+      const sigKey = (adifQSO.sig_intl || adifQSO.my_sig_intl || adifQSO.sig || adifQSO.my_sig ).toLowerCase()
 
-      condSet(adifQSO, sigRef, 'my_sig', 'name')
-      condSet(adifQSO, sigRef, 'sig', 'name')
-      sigRef.type = sigRef.name.toLowerCase()
+      qso.refs = qso.refs ?? {}
 
-      condSet(adifQSO, sigRef, 'sig_info', 'ref')
+      const sigValue = adifQSO.sig_info_intl ?? adifQSO.sig_info
+      if (sigValue || adifQSO.sig || adifQSO.sig_intl) qso.refs[sigKey] = { ref: sigValue ?? true }
 
-      if (adifQSO.sig_info || adifQSO.sig_info_intl) {
-        sigRef.their = {}
-        condSet(adifQSO, sigRef.their, 'sig_info', 'ref')
-      }
-      if (adifQSO.my_sig_info || adifQSO.my_sig_info_intl) {
-        sigRef.our = {}
-        condSet(adifQSO, sigRef.our, 'my_sig_info', 'ref')
-      }
-      qso.refs.push(sigRef)
+      const mySigValue = adifQSO.my_sig_info_intl ?? adifQSO.my_sig_info
+      if (mySigValue || adifQSO.my_sig || adifQSO.my_sig_intl) qso.refs[sigKey + 'Activation'] = { ref: mySigValue }
     }
 
     return qso
   } catch (error) {
+    qso._error = `${error.name}: ${error.message}`
     console.error(
       `Error parsing ADIF QSO - ${error.name}: ${error.message}`,
       '-- QSO Data:',
@@ -308,7 +275,7 @@ function parseAdifQSO (adifQSO, options) {
       '-- Error:',
       error
     )
-    return false
+    return qso
   }
 }
 
