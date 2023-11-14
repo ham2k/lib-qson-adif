@@ -36,8 +36,8 @@ function parseADIF (str, options = {}) {
   })
 
   qsos.sort((a, b) => {
-    if (a.startMillis !== b.startMillis) {
-      return a.startMillis - b.startMillis
+    if (a.startOnMillis !== b.startOnMillis) {
+      return a.startOnMillis - b.startOnMillis
     } else {
       return a._number - b._number
     }
@@ -82,8 +82,8 @@ function cleanupCounty (country, county) {
 }
 
 function parseAdifQSO (adifQSO, options) {
+  const qso = { our: {}, their: {} }
   try {
-    const qso = { our: {}, their: {} }
 
     condSet(adifQSO, qso.their, 'call', 'call', (x) => x.replace('_', '/'))
     condSet(adifQSO, qso.their, 'contacted_op', 'operator', (x) => x.replace('_', '/'))
