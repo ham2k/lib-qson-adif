@@ -292,11 +292,11 @@ function parseFrequency (freq) {
 
 function adifDateToISO (str, time) {
   if (time && time.indexOf(':')) {
-    time = [time.substr(0, 2) || '00', time.substr(2, 2) || '00', time.substr(4, 2) || '00'].join(':')
+    time = [time.substring(0, 2) || '00', time.substring(2, 4) || '00', time.substring(4, 6) || '00'].join(':')
   } else {
     time = '00:00:00'
   }
-  return [str.substr(0, 4), str.substr(4, 2), str.substr(6, 2)].join('-') + `T${time}Z`
+  return [str.substring(0, 4), str.substring(4, 6), str.substring(6, 8)].join('-') + `T${time}Z`
 }
 
 module.exports = {
