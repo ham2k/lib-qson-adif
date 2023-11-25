@@ -62,8 +62,14 @@ function condSet (src, dest, field, destField, f) {
   return val
 }
 
-const REGEXP_FOR_MIXW_BAD_ADIF = /<(PROGRAMID|PROGRAMVERSION)>(.+)([\n\r]+)/g
+const REGEXP_FOR_EOH = /(.+)(?=<EOH>)/gi
+const REGEXP_FOR_MIXW_BAD_ADIF = /<(PROGRAMID|PROGRAMVERSION)>(.+)([\n\r]+)/gi
+
 function cleanupBadADIF(str) {
+  str = str.replace(REGEXP_FOR_EOH, (match, p1) => {
+     // Some ADIF v1 Files have <BR> tags in the header
+    p1.replace(/<BR>/gi, '')
+  })
   str = str.replace(REGEXP_FOR_MIXW_BAD_ADIF, (match, p1, p2, p3) => `<${p1}:${p2.length}>${p2}${p3}`)
   return str
 }
