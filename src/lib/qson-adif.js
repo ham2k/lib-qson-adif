@@ -1,7 +1,7 @@
-const { AdifParser } = require('adif-parser-ts')
-const { bandForFrequency } = require('@ham2k/lib-operation-data')
+import { AdifParser } from 'adif-parser-ts'
+import { bandForFrequency } from '@ham2k/lib-operation-data'
 
-function adifToQSON (str) {
+export function adifToQSON (str) {
   return parseADIF(str)
 }
 
@@ -305,6 +305,3 @@ function adifDateToISO (str, time) {
   return [str.substring(0, 4), str.substring(4, 6), str.substring(6, 8)].join('-') + `T${time}Z`
 }
 
-module.exports = {
-  adifToQSON
-}

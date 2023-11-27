@@ -1,5 +1,1 @@
-const { adifToQSON } = require('./lib/qson-adif')
-
-module.exports = {
-  adifToQSON
-}
+export * from './lib/qson-adif'
