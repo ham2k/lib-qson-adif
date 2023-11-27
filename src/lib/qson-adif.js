@@ -208,6 +208,18 @@ function parseAdifQSO (adifQSO, options) {
       condSet(adifQSO, qso.qsl.eqsl, 'eqsl_sql_rdate', 'receivedOn', adifDateToISO)
     }
 
+    if (adifQSO.app_dxkeeper_clublog_qsl_rcvd === 'Y') {
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.clublog = { received: true }
+      condSet(adifQSO, qso.qsl.clublog, 'app_dxkeeper_clublog_qslrdate', 'receivedOn', adifDateToISO)
+    }
+
+    if (adifQSO.app_dxkeeper_qrzcom_qslrdate) {
+      qso.qsl = qso.qsl ?? {}
+      qso.qsl.qrz = { received: true }
+      condSet(adifQSO, qso.qsl.qrz, 'app_dxkeeper_qrzcom_qslrdate', 'receivedOn', adifDateToISO)
+    }
+
     if (adifQSO.qsl_rcvd === 'Y' && options.genericQSL) {
       qso.qsl = qso.qsl ?? {}
       qso.qsl.qsl = { received: true }
