@@ -214,11 +214,11 @@ function parseAdifQSO (adifQSO, options) {
       condSet(adifQSO, qso.qsl.clublog, 'app_dxkeeper_clublog_qslrdate', 'receivedOn', adifDateToISO)
     }
 
-    if (adifQSO.app_dxkeeper_qrzcom_qslrdate) {
-      qso.qsl = qso.qsl ?? {}
-      qso.qsl.qrz = { received: true }
-      condSet(adifQSO, qso.qsl.qrz, 'app_dxkeeper_qrzcom_qslrdate', 'receivedOn', adifDateToISO)
-    }
+    // if (adifQSO.app_dxkeeper_qrzcom_qslrdate) {  // Not reliable right now
+    //   qso.qsl = qso.qsl ?? {}
+    //   qso.qsl.qrz = { received: true }
+    //   condSet(adifQSO, qso.qsl.qrz, 'app_dxkeeper_qrzcom_qslrdate', 'receivedOn', adifDateToISO)
+    // }
 
     if (adifQSO.qsl_rcvd === 'Y' && options.genericQSL) {
       qso.qsl = qso.qsl ?? {}
