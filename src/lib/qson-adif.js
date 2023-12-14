@@ -2,14 +2,14 @@ import { AdifParser } from 'adif-parser-ts'
 import { bandForFrequency } from '@ham2k/lib-operation-data'
 
 export function adifToQSON (str) {
-  return parseADIF(str)
+  const qson = parseADIF(str)
+  qson.version = '0.4'
+  return qson
 }
 
 function parseADIF (str, options = {}) {
   let headers = {}
   const qsos = [], errors = []
-
-  let qsoCount = 0
 
   const adif = AdifParser.parseAdi(cleanupBadADIF(str))
 
@@ -21,6 +21,7 @@ function parseADIF (str, options = {}) {
     options.genericQSL = 'qsl'
   }
 
+  let qsoCount = 0
   adif.records.forEach((adifQSO) => {
     const qso = parseAdifQSO(adifQSO, options)
     if (qso) {
@@ -241,43 +242,42 @@ function parseAdifQSO (adifQSO, options) {
 
     // References
     if (adifQSO.contest_id) {
-      qso.refs = qso.refs ?? {}
-      const ref = {}
-      qso.refs.contest = { ref: adifQSO.contest_id }
+      qso.refs = qso.refs ?? []
+      qso.refs.push({ type: 'contest', ref: adifQSO.contest_id })
     }
 
     if (adifQSO.iota) {
-      qso.refs = qso.refs ?? {}
-      const ref = { [adifQSO.iota]: {} }
+      qso.refs = qso.refs ?? []
+      const ref = { type: 'iota', ref: adifQSO.iota }
       condSet(adifQSO, ref, 'iota_island_id', 'island')
-      qso.refs.iota = ref
+      qso.refs.push(ref)
     }
     if (adifQSO.my_iota) {
-      qso.refs = qso.refs ?? {}
-      const ref = { [adifQSO.my_iota]: {} }
+      qso.refs = qso.refs ?? []
+      const ref = { type: 'iotaActivation', ref: adifQSO.my_iota }
       condSet(adifQSO, ref, 'my_iota_island_id', 'island')
-      qso.refs.iotaActivation = ref
+      qso.refs.push(ref)
     }
 
     if (adifQSO.sota) {
-      qso.refs = qso.refs ?? {}
-      qso.refs.sota = { [adifQSO.sota]: true }
+      qso.refs = qso.refs ?? []
+      qso.refs.push({ type: 'sota', ref: adifQSO.sota })
     }
     if (adifQSO.my_sota) {
-      qso.refs = qso.refs ?? {}
-      qso.refs.sotaActivation = { [adifQSO.my_sota]: true }
+      qso.refs = qso.refs ?? []
+      qso.refs.push({ type: 'sotaActivation', ref: adifQSO.my_sota })
     }
 
     if (adifQSO.sig || adifQSO.sig_intl || adifQSO.my_sig || adifQSO.my_sig_intl ) {
-      const sigKey = (adifQSO.sig_intl || adifQSO.my_sig_intl || adifQSO.sig || adifQSO.my_sig ).toLowerCase()
+      const sigType = (adifQSO.sig_intl || adifQSO.my_sig_intl || adifQSO.sig || adifQSO.my_sig ).toLowerCase()
 
-      qso.refs = qso.refs ?? {}
+      qso.refs = qso.refs ?? []
 
       const sigValue = adifQSO.sig_info_intl ?? adifQSO.sig_info
-      if (sigValue || adifQSO.sig || adifQSO.sig_intl) qso.refs[sigKey] = { ref: sigValue ?? true }
+      if (sigValue || adifQSO.sig || adifQSO.sig_intl) qso.refs.push({ type: sigType, ref: sigValue })
 
       const mySigValue = adifQSO.my_sig_info_intl ?? adifQSO.my_sig_info
-      if (mySigValue || adifQSO.my_sig || adifQSO.my_sig_intl) qso.refs[sigKey + 'Activation'] = { ref: mySigValue }
+      if (mySigValue || adifQSO.my_sig || adifQSO.my_sig_intl) qso.refs.push({ type: `${sigType}Activation`, ref: mySigValue })
     }
 
     return qso

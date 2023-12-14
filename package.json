@@ -1,21 +1,21 @@
 {
   "name": "@ham2k/lib-qson-adif",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "type": "module",
   "dependencies": {
-    "adif-parser-ts": "^0.4.55",
-    "@ham2k/lib-operation-data": "~0.0.1"
+    "adif-parser-ts": "^0.4",
+    "@ham2k/lib-operation-data": "^0.1"
   },
   "devDependencies": {
-    "jest": "^29.5.0",
-    "standard": "^17.0.0"
+    "jest": "^29",
+    "standard": "^17"
   },
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js"
   },
   "scripts": {
-    "test": "jest"
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
   },
   "standard": {
     "env": [

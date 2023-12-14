@@ -1,6 +1,6 @@
 # QSO Object Notation
 
-VERSION 0.2
+VERSION 0.4
 
 A JSON-like object notation for representation of Amateur Radio log data, with an emphasis on legibility and clarity over storage efficiency.
 
@@ -46,9 +46,14 @@ There is also a top-level `qsl.received` key with a boolean value, indicating wh
 
 - `refs` : References to specific operations, activities or awards.
 
-A hash of reference types such as "pota", "contest", etc. Each reference should have one or more text keys (such as "K-1234" for a POTA activation) that in turn contain either a boolean, a string label, or a hash with more information. Any value, even an empty hash, is considered equivalent to "true".
+An array of hashes, each with a `type` key and a `ref` key.
 
-For "asymetrical" activities like POTA, SOTA, etc, the default reference is for hunting, and a separate reference for activating is provided under `refs.potaActivation`.
+The `type` can be something like "pota" or "sota" or "contest". The `ref` is a string reference unique to the type,
+such as "K-1234" for `pota` or "NAQPSSB" for `contest`.
+
+The hash can contain additional information specific to the reference type. For example, for a contest, it can contain the transmitter number and the multipliers worked.
+
+For "asymetrical" activities like POTA, SOTA, etc, the default reference is for hunting, and a separate reference for activating is provided under `potaActivation`.
 
 # Special Cases
 

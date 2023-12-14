@@ -1,40 +1,49 @@
-const { adifToQSON } = require('./qson-adif')
-const fs = require('fs')
-const path = require('path')
+import { adifToQSON } from './qson-adif'
+import fs from 'fs'
 
 describe('adifToQSON', () => {
   it('should work with LoTW files', () => {
     /* eslint-disable n/handle-callback-err */
-    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-lotw.adi'), 'ascii', (err, data) => data)
+    const lotw = fs.readFileSync('src/lib/samples/ki2d-lotw.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
 
+    // The file has QSOs out of order
+    const qsoNumbers = qson.qsos.map((qso) => qso._number)
+    const qsoSortedNumbers = qson.qsos.map((qso) => qso._number).sort((a, b) => a - b)
+    expect(qsoNumbers).not.toEqual(qsoSortedNumbers)
+
+    // The resulting QSOs should be sorted by time
+    const qsoTimes = qson.qsos.map((qso) => qso.startOnMillis)
+    const qsoSortedTimes = qson.qsos.map((qso) => qso.startOnMillis).sort((a, b) => a - b)
+    expect(qsoTimes).toEqual(qsoSortedTimes)
+
     expect(qson.qsos.length).toEqual(13)
-    expect(qson.qsos[2]._number).toEqual(3)
-    expect(qson.qsos[2].startOn).toEqual('2021-07-05T13:34:00Z')
-    expect(qson.qsos[2].startOnMillis).toEqual(Date.parse('2021-07-05T13:34:00Z'))
-    expect(qson.qsos[2].freq).toEqual(14075.9)
-    expect(qson.qsos[2].band).toEqual('20m')
-    expect(qson.qsos[2].mode).toEqual('FT8')
-    expect(qson.qsos[2].our.call).toEqual('KI2D')
-    expect(qson.qsos[2].our.dxccCode).toEqual(291)
-    expect(qson.qsos[2].our.county).toEqual('US/NY/SULLIVAN')
-    expect(qson.qsos[2].our.grid).toEqual('FN21RQ')
-    expect(qson.qsos[2].our.ituZone).toEqual(8)
-    expect(qson.qsos[2].our.cqZone).toEqual(5)
-    expect(qson.qsos[2].their.call).toEqual('WD4CVK')
-    expect(qson.qsos[2].their.dxccCode).toEqual(291)
-    expect(qson.qsos[2].their.county).toEqual('US/GA/UNION')
-    expect(qson.qsos[2].their.grid).toEqual('EM74XU')
-    expect(qson.qsos[2].their.ituZone).toEqual(8)
-    expect(qson.qsos[2].their.cqZone).toEqual(5)
-    expect(qson.qsos[2].qsl.lotw.receivedOn).toEqual('2021-07-06T12:59:09Z')
-    expect(qson.qsos[2].qsl.lotw.sentOn).toEqual('2021-07-06T12:59:09Z')
+    expect(qson.qsos[5]._number).toEqual(3)
+    expect(qson.qsos[5].startOn).toEqual('2021-07-05T13:34:00Z')
+    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2021-07-05T13:34:00Z'))
+    expect(qson.qsos[5].freq).toEqual(14075.9)
+    expect(qson.qsos[5].band).toEqual('20m')
+    expect(qson.qsos[5].mode).toEqual('FT8')
+    expect(qson.qsos[5].our.call).toEqual('KI2D')
+    expect(qson.qsos[5].our.dxccCode).toEqual(291)
+    expect(qson.qsos[5].our.county).toEqual('US/NY/SULLIVAN')
+    expect(qson.qsos[5].our.grid).toEqual('FN21RQ')
+    expect(qson.qsos[5].our.ituZone).toEqual(8)
+    expect(qson.qsos[5].our.cqZone).toEqual(5)
+    expect(qson.qsos[5].their.call).toEqual('WD4CVK')
+    expect(qson.qsos[5].their.dxccCode).toEqual(291)
+    expect(qson.qsos[5].their.county).toEqual('US/GA/UNION')
+    expect(qson.qsos[5].their.grid).toEqual('EM74XU')
+    expect(qson.qsos[5].their.ituZone).toEqual(8)
+    expect(qson.qsos[5].their.cqZone).toEqual(5)
+    expect(qson.qsos[5].qsl.lotw.receivedOn).toEqual('2021-07-06T12:59:09Z')
+    expect(qson.qsos[5].qsl.lotw.sentOn).toEqual('2021-07-06T12:59:09Z')
   })
 
   it('should work with QRZ files', () => {
     /* eslint-disable n/handle-callback-err */
-    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-qrz.adi'), 'ascii', (err, data) => data)
+    const lotw = fs.readFileSync('src/lib/samples/ki2d-qrz.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
 
@@ -69,7 +78,7 @@ describe('adifToQSON', () => {
 
   it('should work with N1MM files', () => {
     /* eslint-disable n/handle-callback-err */
-    const lotw = fs.readFileSync(path.join(__dirname, './samples/ki2d-n1mm.adi'), 'ascii', (err, data) => data)
+    const lotw = fs.readFileSync('src/lib/samples/ki2d-n1mm.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
 
@@ -85,13 +94,13 @@ describe('adifToQSON', () => {
     expect(qson.qsos[5].their.call).toEqual('HG5D')
     expect(qson.qsos[5].their.cqZone).toEqual(15)
     expect(qson.qsos[5].their.sent).toEqual('599')
-    expect(qson.qsos[5].refs.contest.ref).toEqual('ARRL-DX-CW')
+    expect(qson.qsos[5].refs[0]).toEqual({type: 'contest', ref: 'ARRL-DX-CW'})
     expect(qson.qsos[5].qsl).toEqual(undefined)
   })
 
   it('should work with Club Log files', () => {
     /* eslint-disable n/handle-callback-err */
-    const clublog = fs.readFileSync(path.join(__dirname, './samples/ki2d-clublog.adi'), 'ascii', (err, data) => data)
+    const clublog = fs.readFileSync('src/lib/samples/ki2d-clublog.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(clublog)
 
@@ -112,7 +121,7 @@ describe('adifToQSON', () => {
 
   it('should work with MixW files', () => {
     /* eslint-disable n/handle-callback-err */
-    const mixw = fs.readFileSync(path.join(__dirname, './samples/wo7r-mixw2.adi'), 'ascii', (err, data) => data)
+    const mixw = fs.readFileSync('src/lib/samples/wo7r-mixw2.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(mixw)
 
@@ -138,7 +147,7 @@ describe('adifToQSON', () => {
 
   it('should work with HamRS POTA files', () => {
     /* eslint-disable n/handle-callback-err */
-    const pota = fs.readFileSync(path.join(__dirname, './samples/ki2d-pota.adi'), 'ascii', (err, data) => data)
+    const pota = fs.readFileSync('src/lib/samples/ki2d-pota.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(pota)
 
@@ -152,12 +161,10 @@ describe('adifToQSON', () => {
     expect(qson.qsos[0].their.call).toEqual('AC9OT')
     expect(qson.qsos[0].their.grid).toEqual('EN52es')
     expect(qson.qsos[0].our.grid).toEqual('FN54ui')
-    expect(qson.qsos[0].refs).toEqual({
-      pota: { ref: 'K-1467' },
-      potaActivation: { ref: 'K-0001' },
-    })
+    expect(qson.qsos[0].refs).toEqual([
+      { type: 'pota', ref: 'K-1467' },
+      { type: 'potaActivation', ref: 'K-0001' },
+    ])
   })
-
-
 })
 
