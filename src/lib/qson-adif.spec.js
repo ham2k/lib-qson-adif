@@ -3,7 +3,6 @@ import fs from 'fs'
 
 describe('adifToQSON', () => {
   it('should work with LoTW files', () => {
-    /* eslint-disable n/handle-callback-err */
     const lotw = fs.readFileSync('src/lib/samples/ki2d-lotw.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
@@ -42,7 +41,6 @@ describe('adifToQSON', () => {
   })
 
   it('should work with QRZ files', () => {
-    /* eslint-disable n/handle-callback-err */
     const lotw = fs.readFileSync('src/lib/samples/ki2d-qrz.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
@@ -77,7 +75,6 @@ describe('adifToQSON', () => {
   })
 
   it('should work with N1MM files', () => {
-    /* eslint-disable n/handle-callback-err */
     const lotw = fs.readFileSync('src/lib/samples/ki2d-n1mm.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(lotw)
@@ -99,7 +96,6 @@ describe('adifToQSON', () => {
   })
 
   it('should work with Club Log files', () => {
-    /* eslint-disable n/handle-callback-err */
     const clublog = fs.readFileSync('src/lib/samples/ki2d-clublog.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(clublog)
@@ -120,12 +116,12 @@ describe('adifToQSON', () => {
   })
 
   it('should work with MixW files', () => {
-    /* eslint-disable n/handle-callback-err */
     const mixw = fs.readFileSync('src/lib/samples/wo7r-mixw2.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(mixw)
 
-    expect(qson.qsos.length).toEqual(15)
+    expect(qson.qsos.length).toEqual(14)
+
     expect(qson.qsos[5].startOn).toEqual('2023-04-02T00:08:58Z')
     expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2023-04-02T00:08:58Z'))
     expect(qson.qsos[5].endOn).toEqual('2023-04-02T00:09:57Z')
@@ -146,7 +142,6 @@ describe('adifToQSON', () => {
   })
 
   it('should work with HamRS POTA files', () => {
-    /* eslint-disable n/handle-callback-err */
     const pota = fs.readFileSync('src/lib/samples/ki2d-pota.adi', 'ascii', (err, data) => data)
 
     const qson = adifToQSON(pota)
@@ -166,5 +161,47 @@ describe('adifToQSON', () => {
       { type: 'potaActivation', ref: 'K-0001' },
     ])
   })
+
+  it('should work with Logger32 files', () => {
+    const clublog = fs.readFileSync('src/lib/samples/k0xm-logger32.adi', 'ascii', (err, data) => data)
+
+    const qson = adifToQSON(clublog)
+
+    expect(qson.qsos.length).toEqual(1015)
+
+    expect(qson.qsos[5].startOn).toEqual('2023-01-11T01:41:19Z')
+    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2023-01-11T01:41:19Z'))
+    expect(qson.qsos[5].freq).toEqual(14076.11)
+    expect(qson.qsos[5].band).toEqual('20m')
+    expect(qson.qsos[5].mode).toEqual('FT8')
+    expect(qson.qsos[5].our.call).toEqual('K0XM')
+    expect(qson.qsos[5].their.call).toEqual('4S7AVR')
+    expect(qson.qsos[5].their.dxccCode).toEqual(315)
+    expect(qson.qsos[5].their.cqZone).toEqual(22)
+    expect(qson.qsos[5].their.sent).toEqual('-19')
+  })
+
+  it('should work with LogHK files', () => {
+    const clublog = fs.readFileSync('src/lib/samples/r6yy-loghk.adi', 'ascii', (err, data) => data)
+
+    const qson = adifToQSON(clublog)
+
+    expect(qson.qsos.length).toEqual(423)
+
+    expect(qson.qsos[5].startOn).toEqual('2024-01-01T04:00:00Z')
+    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2024-01-01T04:00:00Z'))
+    expect(qson.qsos[5].freq).toEqual(3576.37)
+    expect(qson.qsos[5].band).toEqual('80m')
+    expect(qson.qsos[5].mode).toEqual('MFSK')
+    expect(qson.qsos[5].our.call).toEqual('R6YY')
+    expect(qson.qsos[5].their.call).toEqual('F5MXH')
+    expect(qson.qsos[5].their.dxccCode).toEqual(227)
+    expect(qson.qsos[5].their.cqZone).toEqual(14)
+    expect(qson.qsos[5].their.sent).toEqual('+05')
+
+    expect(qson.qsos[6].startOn).toEqual('2024-01-01T04:04:00Z')
+    expect(qson.qsos[6].startOnMillis).toEqual(Date.parse('2024-01-01T04:04:00Z'))
+  })
+
 })
 
