@@ -112,16 +112,20 @@ function parseAdifQSO (adifQSO, options) {
     qso.mode = adifQSO.mode
 
     if (adifQSO.qso_date) {
-      qso.startOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_on || '00:00:00')
+      qso.startOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_on || adifQSO.time_off || '000000')
       qso.startOnMillis = Date.parse(qso.startOn).valueOf()
     }
 
     if (adifQSO.qso_date_off) {
-      qso.endOn = adifDateToISO(adifQSO.qso_date_off, adifQSO.time_off || '23:59:59')
+      qso.endOn = adifDateToISO(adifQSO.qso_date_off, adifQSO.time_off || '235959')
       qso.endOnMillis = Date.parse(qso.endOn).valueOf()
     } else if (adifQSO.time_off) {
-      qso.endOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_off || '23:59:59')
+      qso.endOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_off || '235959')
       qso.endOnMillis = Date.parse(qso.endOn).valueOf()
+      if (qso.endOnMillis < qso.startOnMillis) {
+        qso.endOnMillis += 24 * 60 * 60 * 1000
+        qso.endOn = new Date(qso.endOnMillis).toISOString()
+      }
     }
 
     if (!qso.endOn && qso.startOn) {
@@ -132,7 +136,6 @@ function parseAdifQSO (adifQSO, options) {
       qso.startOn = qso.endOn
       qso.startOnMillis = qso.endOnMillis
     }
-
 
     condSet(adifQSO, qso.their, 'name', 'name')
     condSet(adifQSO, qso.their, 'cont', 'continent')
