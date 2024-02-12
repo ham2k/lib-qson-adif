@@ -1,8 +1,8 @@
 import { AdifParser } from 'adif-parser-ts'
 import { bandForFrequency } from '@ham2k/lib-operation-data'
 
-export function adifToQSON (str) {
-  const qson = parseADIF(str)
+export function adifToQSON (str, options) {
+  const qson = parseADIF(str, options)
   qson.version = '0.4'
   return qson
 }
@@ -27,6 +27,7 @@ function parseADIF (str, options = {}) {
     if (qso) {
       qsoCount++
       qso._number = qsoCount
+      if (options.source) qso._source = options.source + ":qso-" + qsoCount
 
       if (qso._error) {
         errors.push(qso)
