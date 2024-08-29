@@ -167,7 +167,7 @@ function parseAdifQSO (adifQSO, options) {
     condSet(adifQSO, qso.our, 'my_city', 'city')
     condSet(adifQSO, qso.our, 'my_state', 'state')
     condSet(adifQSO, qso.our, 'my_region', 'regionCode')
-    condSet(adifQSO, qso.our, 'my_rst_sent', 'sent')
+    condSet(adifQSO, qso.our, 'rst_sent', 'sent')
     condSet(adifQSO, qso.our, 'my_cnty', 'county', (x) => cleanupCounty(qso.our.country, x))
     condSet(adifQSO, qso.our, 'my_cqz', 'cqZone', (x) => parseInt(x, 10))
     condSet(adifQSO, qso.our, 'my_cq_zone', 'cqZone', (x) => parseInt(x, 10))

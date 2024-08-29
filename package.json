@@ -1,10 +1,10 @@
 {
   "name": "@ham2k/lib-qson-adif",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "type": "module",
   "dependencies": {
-    "adif-parser-ts": "^0.4",
-    "@ham2k/lib-operation-data": "^0.1"
+    "adif-parser-ts": "^0.6",
+    "@ham2k/lib-operation-data": "^0.6"
   },
   "devDependencies": {
     "jest": "^29",
