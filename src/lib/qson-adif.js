@@ -38,8 +38,8 @@ function parseADIF (str, options = {}) {
   })
 
   qsos.sort((a, b) => {
-    if (a.startOnMillis !== b.startOnMillis) {
-      return a.startOnMillis - b.startOnMillis
+    if ((a.startAtMillis || 0) !== (b.startAtMillis || 0)) {
+      return (a.startAtMillis || 0) - (b.startAtMillis || 0)
     } else {
       return a._number - b._number
     }
@@ -113,29 +113,29 @@ function parseAdifQSO (adifQSO, options) {
     qso.mode = adifQSO.mode
 
     if (adifQSO.qso_date) {
-      qso.startOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_on || adifQSO.time_off || '000000')
-      qso.startOnMillis = Date.parse(qso.startOn).valueOf()
+      qso.startAt = adifDateToISO(adifQSO.qso_date, adifQSO.time_on || adifQSO.time_off || '000000')
+      qso.startAtMillis = Date.parse(qso.startAt).valueOf()
     }
 
     if (adifQSO.qso_date_off) {
-      qso.endOn = adifDateToISO(adifQSO.qso_date_off, adifQSO.time_off || '235959')
-      qso.endOnMillis = Date.parse(qso.endOn).valueOf()
+      qso.endAt = adifDateToISO(adifQSO.qso_date_off, adifQSO.time_off || '235959')
+      qso.endAtMillis = Date.parse(qso.endAt).valueOf()
     } else if (adifQSO.time_off) {
-      qso.endOn = adifDateToISO(adifQSO.qso_date, adifQSO.time_off || '235959')
-      qso.endOnMillis = Date.parse(qso.endOn).valueOf()
-      if (qso.endOnMillis < qso.startOnMillis) {
-        qso.endOnMillis += 24 * 60 * 60 * 1000
-        qso.endOn = new Date(qso.endOnMillis).toISOString()
+      qso.endAt = adifDateToISO(adifQSO.qso_date, adifQSO.time_off || '235959')
+      qso.endAtMillis = Date.parse(qso.endAt).valueOf()
+      if (qso.endAtMillis < qso.startAtMillis) {
+        qso.endAtMillis += 24 * 60 * 60 * 1000
+        qso.endAt = new Date(qso.endAtMillis).toISOString()
       }
     }
 
-    if (!qso.endOn && qso.startOn) {
-      qso.endOn = qso.startOn
-      qso.endOnMillis = qso.startOnMillis
+    if (!qso.endAt && qso.startAt) {
+      qso.endAt = qso.startAt
+      qso.endAtMillis = qso.startAtMillis
     }
-    if (!qso.startOn && qso.endOn) {
-      qso.startOn = qso.endOn
-      qso.startOnMillis = qso.endOnMillis
+    if (!qso.startAt && qso.endAt) {
+      qso.startAt = qso.endAt
+      qso.startAtMillis = qso.endAtMillis
     }
 
     condSet(adifQSO, qso.their, 'name', 'name')

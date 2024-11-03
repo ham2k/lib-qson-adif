@@ -32,7 +32,7 @@ Main components:
 
 - `.` : (the root level of the object) attributes common to both parties in the contact (even if they have been recorded from the point of view of the operator doing the logging).
 
-Examples: `startOn`, `endOn`, `band`, `mode`, `freq`.
+Examples: `startAt`, `endAt`, `band`, `mode`, `freq`.
 
 - Two sets of "operator" attributes: `ours` and `theirs`.
 

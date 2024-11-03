@@ -13,14 +13,14 @@ describe('adifToQSON', () => {
     expect(qsoNumbers).not.toEqual(qsoSortedNumbers)
 
     // The resulting QSOs should be sorted by time
-    const qsoTimes = qson.qsos.map((qso) => qso.startOnMillis)
-    const qsoSortedTimes = qson.qsos.map((qso) => qso.startOnMillis).sort((a, b) => a - b)
+    const qsoTimes = qson.qsos.map((qso) => qso.startAtMillis)
+    const qsoSortedTimes = qson.qsos.map((qso) => qso.startAtMillis).sort((a, b) => a - b)
     expect(qsoTimes).toEqual(qsoSortedTimes)
 
     expect(qson.qsos.length).toEqual(13)
     expect(qson.qsos[5]._number).toEqual(3)
-    expect(qson.qsos[5].startOn).toEqual('2021-07-05T13:34:00Z')
-    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2021-07-05T13:34:00Z'))
+    expect(qson.qsos[5].startAt).toEqual('2021-07-05T13:34:00Z')
+    expect(qson.qsos[5].startAtMillis).toEqual(Date.parse('2021-07-05T13:34:00Z'))
     expect(qson.qsos[5].freq).toEqual(14075.9)
     expect(qson.qsos[5].band).toEqual('20m')
     expect(qson.qsos[5].mode).toEqual('FT8')
@@ -47,8 +47,8 @@ describe('adifToQSON', () => {
 
     expect(qson.qsos.length).toEqual(32)
     expect(qson.qsos[5]._number).toEqual(6)
-    expect(qson.qsos[5].startOn).toEqual('2021-05-04T10:59:00Z')
-    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2021-05-04T10:59:00Z'))
+    expect(qson.qsos[5].startAt).toEqual('2021-05-04T10:59:00Z')
+    expect(qson.qsos[5].startAtMillis).toEqual(Date.parse('2021-05-04T10:59:00Z'))
     expect(qson.qsos[5].freq).toEqual(7075.82)
     expect(qson.qsos[5].band).toEqual('40m')
     expect(qson.qsos[5].mode).toEqual('FT8')
@@ -81,8 +81,8 @@ describe('adifToQSON', () => {
 
     expect(qson.qsos.length).toEqual(25)
     expect(qson.qsos[5]._number).toEqual(6)
-    expect(qson.qsos[5].startOn).toEqual('2022-02-19T13:21:06Z')
-    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2022-02-19T13:21:06Z'))
+    expect(qson.qsos[5].startAt).toEqual('2022-02-19T13:21:06Z')
+    expect(qson.qsos[5].startAtMillis).toEqual(Date.parse('2022-02-19T13:21:06Z'))
     expect(qson.qsos[5].freq).toEqual(14065.4)
     expect(qson.qsos[5].band).toEqual('20m')
     expect(qson.qsos[5].mode).toEqual('CW')
@@ -101,8 +101,8 @@ describe('adifToQSON', () => {
     const qson = adifToQSON(clublog)
 
     expect(qson.qsos.length).toEqual(14)
-    expect(qson.qsos[5].startOn).toEqual('2020-05-20T01:25:00Z')
-    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2020-05-20T01:25:00Z'))
+    expect(qson.qsos[5].startAt).toEqual('2020-05-20T01:25:00Z')
+    expect(qson.qsos[5].startAtMillis).toEqual(Date.parse('2020-05-20T01:25:00Z'))
     expect(qson.qsos[5].freq).toEqual(14075.2)
     expect(qson.qsos[5].band).toEqual('20m')
     expect(qson.qsos[5].mode).toEqual('FT8')
@@ -122,10 +122,10 @@ describe('adifToQSON', () => {
 
     expect(qson.qsos.length).toEqual(14)
 
-    expect(qson.qsos[5].startOn).toEqual('2023-04-02T00:08:58Z')
-    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2023-04-02T00:08:58Z'))
-    expect(qson.qsos[5].endOn).toEqual('2023-04-02T00:09:57Z')
-    expect(qson.qsos[5].endOnMillis).toEqual(Date.parse('2023-04-02T00:09:57Z'))
+    expect(qson.qsos[5].startAt).toEqual('2023-04-02T00:08:58Z')
+    expect(qson.qsos[5].startAtMillis).toEqual(Date.parse('2023-04-02T00:08:58Z'))
+    expect(qson.qsos[5].endAt).toEqual('2023-04-02T00:09:57Z')
+    expect(qson.qsos[5].endAtMillis).toEqual(Date.parse('2023-04-02T00:09:57Z'))
     expect(qson.qsos[5].freq).toEqual(144116)
     expect(qson.qsos[5].band).toEqual('2m')
     expect(qson.qsos[5].mode).toEqual('JT65')
@@ -148,7 +148,7 @@ describe('adifToQSON', () => {
 
     expect(qson.qsos.length).toEqual(72)
 
-    expect(qson.qsos[0].startOn).toEqual('2023-09-07T23:27:27Z')
+    expect(qson.qsos[0].startAt).toEqual('2023-09-07T23:27:27Z')
     expect(qson.qsos[0].freq).toEqual(14290)
     expect(qson.qsos[0].band).toEqual('20m')
     expect(qson.qsos[0].mode).toEqual('SSB')
@@ -169,8 +169,8 @@ describe('adifToQSON', () => {
 
     expect(qson.qsos.length).toEqual(1015)
 
-    expect(qson.qsos[5].startOn).toEqual('2023-01-11T01:41:19Z')
-    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2023-01-11T01:41:19Z'))
+    expect(qson.qsos[5].startAt).toEqual('2023-01-11T01:41:19Z')
+    expect(qson.qsos[5].startAtMillis).toEqual(Date.parse('2023-01-11T01:41:19Z'))
     expect(qson.qsos[5].freq).toEqual(14076.11)
     expect(qson.qsos[5].band).toEqual('20m')
     expect(qson.qsos[5].mode).toEqual('FT8')
@@ -188,8 +188,8 @@ describe('adifToQSON', () => {
 
     expect(qson.qsos.length).toEqual(423)
 
-    expect(qson.qsos[5].startOn).toEqual('2024-01-01T04:00:00Z')
-    expect(qson.qsos[5].startOnMillis).toEqual(Date.parse('2024-01-01T04:00:00Z'))
+    expect(qson.qsos[5].startAt).toEqual('2024-01-01T04:00:00Z')
+    expect(qson.qsos[5].startAtMillis).toEqual(Date.parse('2024-01-01T04:00:00Z'))
     expect(qson.qsos[5].freq).toEqual(3576.37)
     expect(qson.qsos[5].band).toEqual('80m')
     expect(qson.qsos[5].mode).toEqual('MFSK')
@@ -199,8 +199,8 @@ describe('adifToQSON', () => {
     expect(qson.qsos[5].their.cqZone).toEqual(14)
     expect(qson.qsos[5].their.sent).toEqual('+05')
 
-    expect(qson.qsos[6].startOn).toEqual('2024-01-01T04:04:00Z')
-    expect(qson.qsos[6].startOnMillis).toEqual(Date.parse('2024-01-01T04:04:00Z'))
+    expect(qson.qsos[6].startAt).toEqual('2024-01-01T04:04:00Z')
+    expect(qson.qsos[6].startAtMillis).toEqual(Date.parse('2024-01-01T04:04:00Z'))
   })
 
 })
